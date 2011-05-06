@@ -1,0 +1,23 @@
+;This is an example libki.ini file for the Koha integration files for Libki.
+;It is set up so that multiple libki servers can be integrated with Koha.
+;In this way, if a Koha installation is used for multiple libraries, each
+;Library can have its own Libki server
+;
+;Simply add as many [Database#] sections as you need.
+[Database1]
+host = libki.library1.org
+username = libkiadmin
+password = PASSWORD
+database = libki
+
+[Database2]
+host = libki.library2.org
+username = libkiadmin
+password = PASSWORD
+database = libki
+
+[Database3]
+host = libki.library3.org
+username = libkiadmin
+password = PASSWORD
+database = libki

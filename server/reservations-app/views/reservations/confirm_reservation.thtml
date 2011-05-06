@@ -1,0 +1,13 @@
+<?php if( isset( $error ) ): ?>
+
+	<?php if( $error == 'has_reservation' ): ?>
+		<p>Unable to make reservation, you have a reservation already.</p>
+	<?php endif; ?>
+
+	<?php if( $error == 'invalid_user' ): ?>
+		<p>Unable to make reservation, your login and password do not match.</p>
+	<?php endif; ?>
+
+<?php else: ?>
+	<p>You're reservation for machine <?=$machine?> starting at <?=date('h:i A', $start_timestamp )?> and ending at <?=date('h:i A', $end_timestamp )?> has been confirmed.</p>
+<?php endif; ?>

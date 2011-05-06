@@ -1,0 +1,15 @@
+<form action="<?=$html->url('/logins/set_units/')?>" method="post">
+	<label for="amount">Amount of Time:</label>
+	<input type="hidden" name="username" id="username" value="<?=$username?>" />
+	<input name="amount" id="amount" type="text" max="3" size="3"/>
+	
+	<input type="submit" value="Submit">
+</form>
+
+<br /><br />
+
+<ul>
+	<li>Append '+' to number of minutes to add to a user's existing time.</li>
+	<li>Append '-' to number of minutes to subtract from a user's existing time.</li>
+	<li>Leave the number unsigned to change a user's available minutes to the given number.</li>
+</ul>

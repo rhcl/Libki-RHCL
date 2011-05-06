@@ -1,0 +1,39 @@
+<script type="text/javascript">
+    var GB_ROOT_DIR = "http://" + window.location.host + "/greybox/";
+</script>
+<script type="text/javascript" src="/greybox/AJS.js"></script>
+<script type="text/javascript" src="/greybox/AJS_fx.js"></script>
+<script type="text/javascript" src="/greybox/gb_scripts.js"></script>
+<link href="/greybox/gb_styles.css" rel="stylesheet" type="text/css" />
+
+<?php echo $html->css('tablecloth');?>
+<?php echo $javascript->includeScript('tablecloth');?>
+
+<?php 
+	$max_display = 3 * 60; 	## Max future minutes to display. FIXME: Move to preference
+	$time_interval = 5;	## Number of minutes each block of time represents FIXME: Move to preference
+	$now_timestamp = $libki->RoundTimeUp( "$time_interval minutes" );
+?>
+
+<table>
+	<thead>
+		<tr>
+			<th>Time / Machine</th>
+			<?php foreach( $registered_machines as $m ): ?>
+				<th><?=$m?></th>
+			<?php endforeach; ?>
+		</tr>
+	</thead>
+
+	<tbody>
+		<?php for ( $i = 0; $i < $max_display; $i += $time_interval ): ?>
+			<?php $timestamp = strtotime( "$i minutes", $now_timestamp ); ?>
+			<tr>
+				<td><?=date('h:i A', $timestamp )?></td>
+	                        <?php foreach( $registered_machines as $m ): ?>
+        	                        <td><a onclick="return GB_showCenter('Reserve Kiosk Computer', this.href)" href='<?=$html->url("/reservations/make_reservation/$m/$timestamp")?>'>Reserve</a></td>
+                	        <?php endforeach; ?>
+			</tr>
+		<?php endfor; ?>
+	</tbody>
+</table>

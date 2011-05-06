@@ -1,0 +1,11 @@
+/* Form Submit Button Images */
+
+input.search {
+	color: black;
+	background-color:#ddd;
+        height: 26px;
+	width: 120px;
+        cursor: pointer;
+	text-align: left;
+        background: #ddd url(/img/system-search.png) no-repeat right center;
+}

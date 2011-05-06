@@ -1,0 +1,62 @@
+; libKi strings ini file
+; This file contains a list of the strings to be displayed by the libKi client software.
+; The strings can print whatever you wish, and can use Pango markup
+
+;[Login Window]
+promptLabel = "<span color='blue'>Please Log In.</span>"
+usernameLabel = "Libary Card Number: "
+passwordLabel = "Password: "
+topLabel = "<span color='red' background='lightgray' size='xx-large' weight='heavy' variant='smallcaps'>Internet Access Computer</span>"
+
+;[Button Labels]
+loginButton = "Log In"
+logoutButton = "Log Out"
+pauseButton = "Pause Session"
+
+;[Timer Window]
+; The whole string appears as "Time Left: X Minutes".
+timeLeftLabel_begin = "Time Left: "
+timeLeftLabel_end  = " Minutes"
+
+windowTitle_begin = ""
+windowTitle_end = " Minutes Left."
+
+;[Logout Popup];
+logoutWarningLabel = "Are You Sure You Want To Log Out?"
+
+;[Message Window]
+message_begin = "<span color='red'>"
+message_end = "</span>"
+
+;[Alert Popup]
+alertMessage_begin = "<span color='red'>"
+alertMessage_end = "</span>"
+
+;[Kiosk Client]
+messageRecieved = "You Have Recieved A Message From A Librarian."
+
+accountDisabled = "You're Account Has Been Disabled."
+accountDisabled2 = "Please Contact A Librarian For Help."
+
+timeWarning_begin = "<span size='large' weight='bold'>You have "
+timeWarning_end = " minutes left."
+timeWarning2 = "Please save any work you have before your time is up."
+timeWarning3 = "Any unsaved work will be lost.</span>"
+
+kioskPaused = "<span color='red'>This Kiosk Is Paused."
+kioskPaused2 = "Only The Person That Paused It Can Unpause It.</span>"
+
+currentlyLoggedIn = "<span color='red'>This account is currently logged in at another station."
+currentlyLoggedIn2 = "Please contact a libarian for help.</span>"
+
+noTimeLeft = "You have no time left."
+
+noMatch = "<span color='red'>Username and Password Do Not Match!</span>"
+
+pausedLabel_begin = "<span color='red' size='x-large'>Kiosk paused for "
+pausedLabel_end = " seconds.</span>"
+
+;[Set Password]
+setPassword = "Please Choose A Password"
+setPasswordButton = "Set Password"
+passwordsDoNotMatch = "Passwords Do Not Match. Please Try Again";

@@ -1,0 +1,66 @@
+<?php echo $html->css('tablecloth');?>
+<?php echo $javascript->includeScript('tablecloth');?>
+
+<?php if ( $target != 'print' ) : ?>
+  <p align="right"><?=$html->link( "Print", "/statistics/index/$month/$year/print" )?></p>
+
+  <form action=<?=$html->url( "/statistics/index" )?>>
+    <label>View Statistics For:</label>
+  
+    <select name="month">
+      <option value="01">01 &nbsp</option>
+      <option value="02">02 &nbsp</option>
+      <option value="03">03 &nbsp</option>
+      <option value="04">04 &nbsp</option>
+      <option value="05">05 &nbsp</option>
+      <option value="06">06 &nbsp</option>
+      <option value="07">07 &nbsp</option>
+      <option value="08">08 &nbsp</option>
+      <option value="09">09 &nbsp</option>
+      <option value="10">10 &nbsp</option>
+      <option value="11">11 &nbsp</option>
+      <option value="12">12 &nbsp</option>
+    </select>
+
+    <?php $cYear = date("Y"); ?>
+    <select name="year">
+      <?php for ( $y = $cYear; $y > $cYear-10; $y-- ) : ?>
+        <option value="<?=$y?>"><?=$y?> &nbsp</option>
+      <?php endfor; ?>
+
+    <input class="search" type="submit" value="Show Statistics" />
+
+  </form>
+
+<?php endif; ?>
+
+<h1>Libki Usage Statistics for <?=$month?>, <?=$year?> </h1>
+
+<table>
+  <thead>
+    <th>Date</th>
+    <?php foreach( $machines as $m ) : ?>
+      <th><?=$m?></th>
+    <?php endforeach; ?>
+  </thead>
+
+  <tbody>
+    <?php foreach ( $statistics as $sk => $sd ): ?>
+      <tr>
+	<td><?=$sk?></td>
+	  <?php foreach ( $machines as $m ) : ?>
+            <td><?=$sd[$m]?></td>
+	  <?php endforeach; ?>
+      </tr>
+    <?php endforeach; ?>
+  </tbody>
+
+  <tfoot>
+    <th></th>
+    <?php foreach ( $machines as $m ) : ?>
+      <th><?=$footer[$m]?></th>
+    <?php endforeach; ?>
+  </tfoot>
+</table>
+
+    

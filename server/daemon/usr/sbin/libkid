@@ -1,0 +1,152 @@
+#!/usr/bin/php
+<?php
+
+## Copyright 2007 Kyle Hall
+
+## This file is part of libKi.
+
+## libKi is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+
+## libKi is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+## You should have received a copy of the GNU General Public License
+## along with libKi; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+
+define( "PID_FILE_PATH", '/var/run/libki.pid' );
+define( "INI_FILE_PATH", '/etc/libki/libki.ini' );
+define( "LOG_FILE_PATH", '/var/log/libki.log' );
+define( "LOCK_FILE_PATH", '/tmp/libki.lockfile' );
+
+## Check the PHP configuration
+if ( ! defined( 'SIGHUP' ) ) {
+  trigger_error( 'PHP is compiled without --enable-pcntl directive', E_USER_ERROR );
+}
+
+## Check if the pid file is writable
+if ( file_exists( PID_FILE_PATH ) && ( ! is_writable( PID_FILE_PATH ) ) ||
+    ( ! file_exists( PID_FILE_PATH ) ) && ( ! is_writable( dirname( PID_FILE_PATH ) ) )
+) {
+  trigger_error( 'Cannot open PID file ' . PID_FILE_PATH . ' for writing.', E_USER_ERROR );
+}
+
+## Daemonize process
+if ( pcntl_fork() ) {
+  exit;
+}
+posix_setsid();
+if ( pcntl_fork() ) {
+  exit;
+}
+
+## Write the pid to file
+$pid = posix_getpid();
+file_put_contents( PID_FILE_PATH, $pid );
+
+## Open Log File
+$logfile = fopen( LOG_FILE_PATH, "a");
+fputs( $logfile, "Starting Daemon\n" );
+
+## Read INI file for settings
+$ini = parse_ini_file( INI_FILE_PATH );
+
+if ( ! $ini ) {
+  fputs( $logfile, "Unable to parse " . INI_FILE_PATH . ". Exiting.\n" );
+  die("Unable to parse " . INI_FILE_PATH . "\n");
+}
+
+## Make sure another instance is not already running
+$fp = fopen( LOCK_FILE_PATH, "a");
+if ( !$fp || !flock( $fp, LOCK_EX | LOCK_NB ) ) {
+  fputs( $logfile, "Failed to acqire lock. Another instance must already be running.\n" );
+  die( "Failed to acqire lock. Another instance must already be running.\n" );
+}
+
+## Change privileges to user 'nobody'
+$pw = posix_getpwnam('nobody');
+posix_setuid( $pw['uid'] );
+posix_setgid( $pw['gid'] );
+
+$host = $ini['host'];
+$username = $ini['username'];
+$password = $ini['password'];
+$database = $ini['database'];
+
+## Grab settings from the database
+$dbh = mysql_connect( $host, $username, $password ); ## mysql_pconnect may be better...or worse
+if ( ! $dbh ) {
+  fputs( $logfile, "Unable to connect to database. Exiting.\n");
+  die("Unable to connect to database.\n"); 
+}
+
+fputs( $logfile, "Accessing libKi settings from database.\n");
+$sql = "SELECT value FROM settings WHERE name = 'post_crash_timeout' ";
+$result = mysql_db_query( $database, $sql, $dbh );
+$row = mysql_fetch_assoc( $result );
+$post_crash_timeout = $row['value'];
+fputs( $logfile, "post_crash_timeout = $post_crash_timeout\n");
+     
+## Begin infinite loop, execute every 60 seconds
+while ( true ) {
+  fputs( $logfile, date('r') . " : Decrementing Minutes\n" );
+
+  $dbh = mysql_connect( $host, $username, $password );
+  if ( ! $dbh ) { 
+    fputs( $logfile, "Unable to connect to database. Exiting.\n");
+    die("Unable to connect to database.");
+  }
+
+  ## Decrement units by 1 for all logged in users
+  $sql = "
+    UPDATE logins SET units = units - 1 
+    WHERE logins.status = 'Logged in' 
+    AND logins.units > 0
+    AND logins.admin = '0'
+  ";
+
+  mysql_db_query( $database, $sql, $dbh );
+
+  ## If a user has a status of logged in, but hasn't accessed the database in X minutes, set the user as logged off.
+  ## Gets around problem of kiosks crashing while logged in, leaving the user stranded and unable to log into another kiosk.
+  $sql = "
+    UPDATE logins
+    SET status = 'Logged out', machine = NULL
+    WHERE status = 'Logged in'
+    AND TIMESTAMPDIFF( MINUTE, last_accessed, CURRENT_TIMESTAMP) > $post_crash_timeout
+  ";
+  mysql_db_query( $database, $sql, $dbh );
+
+  ## Clear out machine names on logged out accounts.
+  $sql = "UPDATE logins
+    SET machine = NULL
+    WHERE status LIKE 'Logged out'
+    AND TIMESTAMPDIFF( MINUTE, last_accessed, CURRENT_TIMESTAMP) > $post_crash_timeout
+  ";
+  mysql_db_query( $database, $sql, $dbh );
+
+  ## Clear out machine names on kicked accounts.
+  $sql = "UPDATE logins
+    SET machine = NULL
+    WHERE status LIKE 'Kicked'
+    AND TIMESTAMPDIFF( MINUTE, last_accessed, CURRENT_TIMESTAMP) > $post_crash_timeout
+  ";
+  mysql_db_query( $database, $sql, $dbh );
+
+  ## Drop all registered client machines that have not updated themselves in
+  ## the last $post_crash_timeout minutes
+  $sql = "
+    DELETE FROM clients
+    WHERE TIMESTAMPDIFF( MINUTE, last_updated, CURRENT_TIMESTAMP) > $post_crash_timeout
+  ";
+  mysql_db_query( $database, $sql, $dbh );
+
+  sleep( 60 );
+}
+
+?>

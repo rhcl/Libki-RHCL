@@ -1,0 +1,122 @@
+<?php echo $html->css('tablecloth');?>
+<?php echo $javascript->includeScript('tablecloth');?>
+
+<p align="right">
+	<a href="<?=$html->url('/logins/create')?>">Create New User Account</a>
+</p>
+
+<!--
+<form name="searchLoginsForm" id="searchLoginsForm" action="<?=$html->url('/logins/index/search')?>" method="post">
+  <fieldset>
+    <legend>Search Users</legend>
+      <label for="username">Username:</label>
+      <input type="text" name="username" id="username" value="<?=$username?>" />
+
+      <label for="status">Status:</label>
+      <select name="status" id="status">
+        <option <?=( $status == "Any" ) ? "selected" : ""?> value="Any">Any</option>
+        <option <?=( $status == "Logged in" ) ? "selected" : ""?> value="Logged in">Logged In</option>
+        <option <?=( $status == "Logged out" ) ? "selected" : ""?> value="Logged out">Logged Out</option>
+        <option <?=( $status == "Paused" ) ? "selected" : ""?> value="Paused">Paused</option>
+        <option <?=( $status == "Kicked" ) ? "selected" : ""?> value="Kicked">Kicked</option>
+      </select>
+			
+      <label for="machine_name_filter">Machine:</label>
+      <select name="machine_name_filter" id="machine_name_filter">
+        <option value="Any">Any</option>
+
+        <?php foreach( $machine_name_filters as $value => $name ) : ?>
+          <option <?=( $machine_name_filter == $value ) ? "selected" : ""?> value="<?=$value?>"><?=$name?></option>
+        <?php endforeach; ?>
+      </select>
+
+      <input class="search" type="submit" value="Search Users" />
+  </fieldset>
+</form>
+-->
+
+<table>
+  <thead>
+    <th>Machine</th>
+    <th>Username</th>
+    <th>Units</th>
+    <th>Notes</th>
+
+    <th>Edit<br/>Time</th>
+    <th>Kick</th>
+    <th>Unpause</th>
+    <th>Send<br/>Message</th>
+    <th>Mark<br/>Troublemaker</th>
+    <th>Log Out</th>
+    <th>Reboot</th>
+  </thead>
+
+  <tbody>
+    <?php foreach ( $clients as $client ) : ?>
+        <?php ## If there is a note for user, show icon with a red dot.
+          if ( empty( $client['logins']['notes'] ) ) {
+            $notesImage = 'accessories-text-editor.png';
+          } else {
+            $notesImage = 'accessories-text-editor-dot.png';
+          }
+      ?>
+      <?php ## If there is a note for user, show icon with a red dot.
+        if ( empty( $client['logins']['troublemaker'] ) ) {
+          $troublemakerImage = 'weather-clear.png';
+        } else {
+          $troublemakerImage = 'weather-storm.png';
+        }
+      ?>
+  
+      <tr>
+        <td><?=$client['clients']['machine_name']?> &nbsp </td>
+        <?php if ( $client['logins']['username'] ) : #User is logged in, show user controls ?>  
+          <td>
+            <?=( $client['logins']['admin'] ) ? $html->image( 'icon-star-large.gif', array( 'width' => '15px', 'height' => '15px' ) ) : '' ?> <?=$client['logins']['username']?>
+            <?=( $use_koha_integration ) ? '&nbsp' . $html->link( $html->image('koha.png'), $koha_intranet_url . '/cgi-bin/koha/members/member.pl?member=' . $client['logins']['username'], array( 'TARGET' => '_blank', 'title' => 'Jump To Koha Record', 'alt' => 'Link to Koha Record' ), $confirmMessage = false, $escapeTitle = false ) : '' ?>
+          </td>
+          <td><?=$client['logins']['units']?> &nbsp;</td>
+          <td><a onclick="return GB_showCenter('Edit Notes for <?=$client['logins']['username']?>', this.href)" href='<?=$html->url('/logins/update_notes_popup/' . $client['logins']['username'])?>' ><?=$html->image( $notesImage, array( 'title'  => "Notes: " . $client['logins']['notes'] ), true )?></a></td>
+          <td><a onclick="return GB_showCenter('Set Time for <?=$client['logins']['username']?>', this.href, 400, 300)" href='<?=$html->url('/logins/set_units_popup/' . $client['logins']['username'])?>'><?=$html->image( 'appointment-new.png', array( 'title'  => "Add/Remove Time" ), true )?></a></td>
+          <td><!-- KICK USER -->
+            <?=$html->link(
+                $title = $html->image( 'system-shutdown.png', array( 'title'  => "Kick User" ), true ),
+                $url = '/clients/kick_user/' . $client['logins']['username'], 
+                $htmlAttributes = null, 
+                $confirmMessage = 'Kick User ' . $client['logins']['username'] . '?', 
+                $excapeTitle = false )
+            ?>
+          </td>
+          <td><a href="<?=$html->url('/clients/unpause/' . $client['logins']['username'])?>" ><?=$html->image( 'media-playback-start.png', array( 'title'  => "Unpause User" ), true )?></a></td>
+	  <td><a onclick="return GB_showCenter('Send Message To <?=$client['logins']['username']?>', this.href)" href='<?=$html->url('/logins/send_message_popup/' . $client['logins']['username'])?>'><?=$html->image( 'mail-reply-sender.png', array( 'title'  => "Send Message" ), true )?></a></td>
+          <td><a href="<?=$html->url('/clients/toggle_troublemaker/' . $client['logins']['username'])?>" ><?=$html->image( $troublemakerImage, array( 'title'  => "Mark as a Troublemaker" ), true )?></a></td>
+          <td><a href="<?=$html->url('/clients/log_out/' . $client['logins']['username'])?>" ><?=$html->image( 'system-log-out.png', array( 'title'  => "Log User Out" ), true )?></a></td>
+          <td><a href="<?=$html->url('/clients/reboot/' . $client['clients']['machine_name'])?>" ><?=$html->image( 'view-refresh.png', array( 'title'  => "Reboot Client Machine" ), true )?></a></td>
+        <?php else: #No user is logged in, hide user controls ?>
+          <td>&nbsp; </td>
+          <td>&nbsp; </td>
+          <td>&nbsp; </td>
+          <td>&nbsp; </td>
+          <td>&nbsp; </td>
+          <td>&nbsp; </td>
+          <td>&nbsp; </td>
+          <td>&nbsp; </td>
+          <td>&nbsp; </td>
+          <td><a href="<?=$html->url('/clients/reboot/' . $client['clients']['machine_name'])?>" ><?=$html->image( 'view-refresh.png', array( 'title'  => "Reboot Client Machine" ), true )?></a></td>
+        <?php endif; ?>
+      </tr>
+    <?php endforeach; ?>
+  </tbody>
+<!--
+  <tfoot>
+    <tr>
+      <td colspan="20">
+        <a href="<?=$html->url("/logins/index/1/$status/$username")?>"><?=$html->image( 'go-first.png', array( 'title' => "First Page" ), true )?></a>
+        <a href="<?=$html->url("/logins/index/$prevpage/$status/$username")?>"><?=$html->image( 'go-previous.png', array( 'title' => "Previous Page" ), true )?></a>
+        <a href="<?=$html->url("/logins/index/$nextpage/$status/$username")?>"><?=$html->image( 'go-next.png', array( 'title' => "Next Page" ), true )?></a>
+        <a href="<?=$html->url("/logins/index/9999/$status/$username")?>"><?=$html->image( 'go-last.png', array( 'title' => "Last Page" ), true )?></a>
+      </td>
+    </tr>
+  </tfoot>
+-->
+</table>

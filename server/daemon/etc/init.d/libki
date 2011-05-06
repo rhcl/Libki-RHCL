@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# description: libKid is the daemon that does user time countdowns
+#              for the libKi kiosk management system.
+# processname: libkid
+# pidfile: /var/run/libkid.pid
+# config: /etc/libki.ini
+
+## Copyright 2007 Kyle Hall
+
+## This file is part of libKi.
+
+## libKi is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+
+## libKi is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+## You should have received a copy of the GNU General Public License
+## along with libKi; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+RETVAL=0
+
+case "$1" in
+  start)
+	echo "Starting libKi Daemon"
+	/usr/sbin/libkid
+	RETVAL=$?
+	;;
+  stop)
+	echo "Shutting down libKi Daemon"
+	PID=`cat /var/run/libki.pid`
+	kill $PID
+	;;
+  restart|reload)
+	$0 stop
+	$0 start
+	RETVAL=$?
+	;;
+  *)
+	echo "Usage: libki {start|stop|restart|reload}"
+	exit 1
+esac
+
+exit $RETVAL
+

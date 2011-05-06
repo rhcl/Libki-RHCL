@@ -1,0 +1,186 @@
+<?php echo $html->css('cake.generic.forms');?>
+<div>
+	<fieldset>
+		<legend>Time Settings</legend>
+		<!-- Maximum Pause Time Form -->
+		<form name="updateTimeSettingsForm" id="updateTimeSettingsForm" action="<?=$html->url('/settings/updateTimeSettings')?>" method="post">
+			<label for="max_pause_time">Max Pause Time:</label>
+			<select id="max_pause_time" name="max_pause_time">
+				<option value="0">Disabled</option>
+				<?php for ( $i = 1; $i <= 30; $i++ ) : ?>
+					<option <?=( $i == $settings['max_pause_time'] ) ? 'selected' : ''?> value="<?=$i?>"><?=$i?></option>
+				<?php endfor; ?>
+			</select>
+			<i>This is the time ( in minutes ) that the pause timer will run before allowing another person to login to a paused kiosk.</i>
+
+<!--
+			<br /><br />
+			<label for="time_before_auto_logout">Time before Auto-Logout:</label>
+			<select id="time_before_auto_logout" name="time_before_auto_logout">
+				<option value="0">Disabled</option>
+				<?php for ( $i = 1; $i <= 30; $i++ ) : ?>
+					<option <?=( $i == $settings['time_before_auto_logout'] ) ? 'selected' : ''?> value="<?=$i?>"><?=$i?></option>
+				<?php endfor; ?>
+			</select>
+			<i>This is the length of inactivity ( in minutes ) before a kiosk will automatically log itself out</i>
+-->
+
+			<br /><br />
+			<label for="post_crash_timeout">Post-Crash Timeout:</label>
+			<select id="post_crash_timeout" name="post_crash_timeout">
+				<option value="0">Disabled</option>
+				<?php for ( $i = 1; $i <= 30; $i++ ) : ?>
+					<option <?=( $i == $settings['post_crash_timeout'] ) ? 'selected' : ''?> value="<?=$i?>"><?=$i?></option>
+				<?php endfor; ?>
+			</select>
+			<i>This is the length of time ( in minutes ) before a logged in user whose kiosk crashed can log back in.</i>
+
+			<br /><br />
+			<label for="seconds_between_client_updates">Time Between Client Updates:</label>
+			<select id="seconds_between_client_updates" name="seconds_between_client_updates">
+				<?php for ( $i = 1; $i <= 60; $i++ ) : ?>
+					<option <?=( $i == $settings['seconds_between_client_updates'] ) ? 'selected' : ''?> value="<?=$i?>"><?=$i?>&nbsp</option>
+				<?php endfor; ?>
+			</select>
+			<i>This is the length of time ( in seconds ) between client updates. Short is more responsive, longer means less network traffic.</i>
+				
+			<br /><br />
+			<label for="daily_minutes">Daily Minutes:</label>
+			<select id="daily_minutes" name="daily_minutes">
+				<?php for ( $i = 1; $i <= 120; $i++ ) : ?>
+					<option <?=( $i == $settings['daily_minutes'] ) ? 'selected' : ''?> value="<?=$i?>"><?=$i?>&nbsp</option>
+				<?php endfor; ?>
+			</select>
+			<i>The number of minutes each user will start with each day.</i>
+
+			<br /><br />
+			<input class="submitSave" type="submit" value="Save" />
+		</form>
+	</fieldset>
+</div>
+
+<div>
+	<fieldset>
+		<legend>Machine Name Filters</legend>
+		<form name="updateMachineNameFiltersForm" id = "updateMachineNameFiltersForm" action="<?=$html->url('/settings/updateMachineNameFilters')?>" method="post">
+			<label for="machine_name_filters">List of Filters</label>
+			<input type="text" name="machine_name_filters" id="machine_name_filters" size="80" value="<?=$settings['machine_name_filters']?>"/>
+			<br/><br/><label></label><i>This is a list of standard prefixes for machine names you may have, ex( childrens1, childrens2, ... ). Separate with '::' ex( childrens::main::fic )</i>
+
+			<br /><br />
+			<input class="submitSave" type="submit" value="Save" />
+		</form>
+	</fieldset>
+</div>
+
+<div>
+	<fieldset>
+		<legend>Koha Integration</legend>
+		<form name="updateKohaIntegrationForm" id = "updateKohaIntegrationForm" action="<?=$html->url('/settings/updateKohaIntegration')?>" method="post">
+			<label for="use_koha_integration">Use Koha Integration?</label>
+			<input type="radio" name="use_koha_integration" value="1" <?=($settings['koha_intranet_url']) ? checked : ''?> > Yes<br>
+			<input type="radio" name="use_koha_integration" value="0" <?=($settings['koha_intranet_url']) ? checked : ''?> > No<br>
+
+			<label for="koha_intranet_url">Koha Intranet URL</label>
+			<input type="text" name="koha_intranet_url" id="koha_intranet_url" size="100" value="<?=$settings['koha_intranet_url']?>"/>
+			<br/><br/><label></label><i>Enter the URL to your Koha Interanet system here ( Example: 'http://koha.mylibrary.org:8080' )</i>
+
+			<br /><br />
+			<input class="submitSave" type="submit" value="Save" />
+		</form>
+	</fieldset>
+</div>
+
+
+<!-- HIDE FOR NOW
+<div id="plugins">
+		<fieldset>
+			<legend>Plugins</legend>
+
+			<form name="editPluginsForm" id="editPluginsForm" action="<?=$html->url('/logins/index/updateAuthentication')?>" method="post">
+				<fieldset>
+					<legend>Edit Plugin</legend>
+		
+					<input type="radio" name="pluginType" value="serverPlugins">Server Plugins</input>
+					<input type="radio" name="pluginType" value="clientPlugins">Client Plugins</input>
+		
+					<label for="pluginName">Name:</label>
+					<select name="pluginName" id="pluginName">
+						<option value="No Plugins Installed">No Plugins Installed</option>
+					</select>
+
+					<label for="pluginTrigger">Trigger:</label>
+					<select name="pluginTrigger" id="pluginTrigger">
+						<option value="oninitsettings">On Init Settings</option>
+						<option value="onloadsettings">On Load Settings</option>
+						<option value="onsavesettings">On Save Settings</option>
+						<option value="onnewuser">On New User</option>
+						<option value="ondeleteuser">On Delete User</option>
+						<option value="onvalidpassword">On Value Password</option>
+						<option value="onlogin">On Login</option>
+						<option value="onkick">On Kick</option>
+						<option value="onlogout">On Logout</option>
+						<option value="onpause">On Pause</option>
+						<option value="onchangepassword">On Change Password</option>
+						<option value="onaddunits">On Add Units</option>
+						<option value="ondelunits">On Delete Units</option>
+						<option value="onsetadminpassword">On Set Admin Password</option>
+						<option value="onadminlogin">On Admin Login</option>
+					</select>
+
+					<label for="pluginCommand">Command:</label>
+					<input type="text" name="pluginCommand" id="pluginCommand" />
+		
+					<label for="pluginDescription">Description:</label>
+					<input type="textbox" name="pluginDescription" id="pluginDescription" />
+		
+					<input class="submitSave" type="submit" value="Save" />
+
+					<input class="submitDelete" type="submit" value="Delete" />
+				</fieldset>
+			</form>
+
+			<form name="createPluginsForm" id="createPluginsForm" action="<?=$html->url('/logins/index/updateAuthentication')?>" method="post">
+				<fieldset>
+					<legend>Create New Plugin</legend>
+		
+					<input type="radio" name="pluginType" value="serverPlugin">Server Plugin</input>
+					<input type="radio" name="pluginType" value="clientPlugin">Client Plugin</input>
+		
+					<label for="pluginName">Name:</label>
+					<input type="text" name="pluginName" id="pluginName">
+
+					<label for="pluginTrigger">Trigger:</label>
+					<select name="pluginTrigger" id="pluginTrigger">
+						<option value="oninitsettings">On Init Settings</option>
+						<option value="onloadsettings">On Load Settings</option>
+						<option value="onsavesettings">On Save Settings</option>
+						<option value="onnewuser">On New User</option>
+						<option value="ondeleteuser">On Delete User</option>
+						<option value="onvalidpassword">On Value Password</option>
+						<option value="onlogin">On Login</option>
+						<option value="onkick">On Kick</option>
+						<option value="onlogout">On Logout</option>
+						<option value="onpause">On Pause</option>
+						<option value="onchangepassword">On Change Password</option>
+						<option value="onaddunits">On Add Units</option>
+						<option value="ondelunits">On Delete Units</option>
+						<option value="onsetadminpassword">On Set Admin Password</option>
+						<option value="onadminlogin">On Admin Login</option>
+					</select>
+
+					<label for="pluginCommand">Command:</label>
+					<input type="text" name="pluginCommand" id="pluginCommand" />
+		
+					<label for="pluginDescription">Description:</label>
+					<input type="textbox" name="pluginDescription" id="pluginDescription" />
+		
+					<input class="submitSave" type="submit" value="Create" />
+
+				</fieldset>
+			</form>
+
+		</fieldset>
+	</form>
+</div>
+END HIDE -->

@@ -1,0 +1,431 @@
+#!/usr/bin/php -c/etc/gtk/php.ini
+<?php
+## Copyright 2007 Kyle Hall
+
+## This file is part of libKi.
+
+## libKi is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+
+## libKi is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+
+## You should have received a copy of the GNU General Public License
+## along with libKi; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+global $_CONSTANTS;
+$_CONSTANTS['DEBUG'] = 0;
+define( "DEBUG", 0 );
+
+require_once('LoginWindow.php');
+require_once('TimerWindow.php');
+require_once('MessageWindow.php');
+require_once('SetPasswordWindow.php');
+require_once('LogoutPopup.php');
+require_once('AlertPopup.php');
+require_once('DBInterface.php');
+
+$kioskClient = new KioskClient();
+
+class KioskClient {
+
+  protected $updates_timeout;
+
+  protected $loginWindow;
+  protected $timerWindow;
+  protected $dbInterface;
+  protected $logoutPopup;
+
+  protected $timeoutHandlerId;
+  protected $registerClientTimeoutHandlerId;
+  
+  public function __construct() {	
+    $this->strings = KioskClient::getStrings();
+
+    $this->dbInterface = new DBInterface();
+    
+    $this->updates_timeout = $this->dbInterface->getSetting( 'seconds_between_client_updates' );
+    if ( DEBUG ) echo "Updates Timeout is " . $this->updates_timeout . "\n";
+    
+    $this->createLoginWindow();
+
+    $this->registerClientTimeoutHandlerId = Gtk::timeout_add( 1000 * $this->updates_timeout, array( &$this, 'registerClient' ) );
+
+    $this->registerClientRebootTimeoutHandlerId = Gtk::timeout_add( 1000 * $this->updates_timeout, array( &$this, 'checkForMachineCommand' ) );
+
+    #  $gdkWindow = $this->loginWindow->get_parent_window();
+    #  $gdkWindow->set_override_redirect( 1 ); ## Doesn't work.
+
+    if ( KioskClient::getEnvironment() == "windows" ) {
+      exec("windows\on_startup.exe > NUL");
+    }
+
+    Gtk::main();
+  }
+  
+  ## This function is called whenever the enter key his pressed on the login screen.
+  ## If either field is empty, it will jump to the empty field.
+  ## If neither field is empty, it will act the same as clicking the 'Log In' button.
+  public function onKey( $widget, $event, $input ) {
+    if ( DEBUG ) echo "KioskClinet::onKey()\n";
+    if ( $event->keyval == Gdk::KEY_Return ) {
+      $username = $this->loginWindow->usernameEntry->get_text();
+      $password = $this->loginWindow->passwordEntry->get_text();
+      
+      if ( empty( $username ) ) {
+        $this->loginWindow->usernameEntry->grab_focus();
+      } else {
+        $this->performLogin();
+      }
+      
+      return true;
+    } else {
+      return false;
+    }
+  }
+    
+  public function registerClient() {
+	$this->dbInterface->registerClient();
+	return true;
+  }
+
+  public function checkForMachineCommand() {
+    $command = $this->dbInterface->fetchClientCommand();
+    echo "KioskClient::checkForMachineCommand() = '$command':: " . date('H:i:s') . "\n";
+	
+	if ( $command ) $this->dbInterface->clearClientCommand();
+	
+	if ( $command == 'reboot' ) {
+		$this->restartClient();
+	}
+	return true;
+  }
+  
+  public function onTimeout() {
+    if ( DEBUG ) echo "KioskClient::onTimeout() :: " . date('H:i:s') . "\n";
+    $this->dbInterface->updateUserData();
+    $this->timerWindow->updateTime( $this->dbInterface->getUnits() );
+
+    if ( $message = $this->dbInterface->getMessage() ) {
+      $alertPopup = new AlertPopup( $this->strings["messageRecieved"] . "\n$message " );
+    }
+
+    if ( $this->dbInterface->isKicked() ) {
+
+      $this->performLogout( $status = "Kicked" );
+      $this->destroyTimerWindow();
+      $alertPopup = new AlertPopup( $this->strings["accountDisabled"] . "\n" . $this->strings["accountDisabled2"] );
+
+    } elseif ( ! $this->dbInterface->isLoggedIn() ) {
+
+      $this->performLogout();
+#      $alertPopup = new AlertPopup( "You have been logged out." );
+
+    } elseif ( $this->dbInterface->getUnits() <= 0 ) {
+        if ( $this->alertPopup ) {
+          $this->alertPopup->destroy();
+        }
+
+      $this->performLogout();
+
+    } elseif ( $this->dbInterface->getUnits() <= 5 ) {
+      $message = $this->strings["timeWarning_begin"] . $this->dbInterface->getUnits() . $this->strings["timeWarning_end"];
+      if ( $this->strings["timeWarning2"] ) {
+        $message = $message . "\n" . $this->strings["timeWarning2"];
+      }
+      if ( $this->strings["timeWarning3"] ) {
+        $message = $message . "\n" . $this->strings["timeWarning3"];
+      }
+
+      if ( $this->timeWarning ) {
+        $this->timeWarning->updateMessage( $message );
+      } else {
+        $this->timeWarning = new MessageWindow( $message );
+        $this->timeWarning->connect_simple( 'destroy', array( &$this, 'destroyTimeWarning' ) );
+      }      
+
+    }
+
+    return true;
+  }
+  
+  public function destroyTimeWarning() {
+    $this->timeWarning->destroy();
+    $this->timeWarning = null;
+  }
+
+  public function performLogin(){
+    if ( DEBUG ) echo "KioskClient::performLogin()\n";
+    ## Grab the data from the form fields
+    $username = $this->loginWindow->getUsername();
+    $password = $this->loginWindow->getPassword();
+
+    ## If the data checks out, hide the login screen and show the timer window.
+    if ( $this->loginWindow->isPaused() ) {
+      ## Check for a paused state first.
+      if ( $this->dbInterface->verifyUnpause( $username, $password ) ) {
+        $this->loginWindow->unPause();
+        $this->destroyLoginWindow();
+        $this->dbInterface->setLoggedIn();
+        
+        Gtk::timeout_remove( $this->pausedTimeoutHandlerId );
+        $this->pausedTimeoutHandlerId = null;
+        
+        if ( ! $this->timeoutHandlerId ) {
+          $this->timeoutHandlerId = Gtk::timeout_add( 1000 * $this->updates_timeout, array( &$this, 'onTimeout' ) );
+        }
+        if ( DEBUG ) echo "timeoutHandlerId = " . $this->timeoutHandlerId . "\n";
+      } else {
+        #$alertPopup = new AlertPopup( $this->strings["kioskPaused"] . "\n" . $this->strings["kioskPaused2"] );
+	$this->loginWindow->hideLoginBox();
+	$this->loginWindow->showErrorBox( $this->strings["kioskPaused2"] );
+      }
+    
+    } else {
+      ## Kiosk is not paused, proceed with normal log in.
+      if ( $this->dbInterface->isLoggedIn( $username ) ) {
+      
+        #$alertPopup = new AlertPopup( $this->strings["currentlyLoggedIn"] . "\n" . $this->strings["currentlyLoggedIn2"] );
+	$this->loginWindow->hideLoginBox();
+	$this->loginWindow->showErrorBox( $this->strings["currentlyLoggedIn2"] );
+        
+      } elseif ( $this->dbInterface->isKicked( $username ) ) {
+      
+        #$alertPopup = new AlertPopup( $this->strings["accountDisabled"] );
+	$this->loginWindow->hideLoginBox();
+	$this->loginWindow->showErrorBox( $this->strings["accountDisabled"] );
+
+      
+      } elseif ( $this->dbInterface->needsPassword( $username ) ) {
+        $setPasswordWindow = new SetPasswordWindow( $username );
+      } elseif ( $this->dbInterface->verifyLogin( $username, $password ) ) {
+      
+        if ( DEBUG ) echo "User $username has " . $this->dbInterface->getUnits() . " units left.\n";
+        
+        if ( $this->dbInterface->getUnits() > 0 ) {
+
+    	  if ( KioskClient::getEnvironment() == "windows" ) {
+	    exec("windows\on_login.exe > NUL");
+    	  }
+
+          $this->destroyLoginWindow();
+          $this->createTimerWindow();
+          $this->timerWindow->updateTime( $this->dbInterface->getUnits() );
+        } else {
+          $alertPopup = new AlertPopup( $this->strings["noTimeLeft"] );
+          $this->performLogout();
+        }
+        
+      } else {
+        #$alertPopup = new AlertPopup( $this->strings["noMatch"] );
+	$this->loginWindow->hideLoginBox();
+	$this->loginWindow->showErrorBox( $this->strings["noMatch"] );
+
+      }
+    }
+  }
+
+  public function warnLogout() {
+    if ( DEBUG ) echo "KioskClient::warnLogout()\n";
+    $this->destroyTimerWindow();
+#    $this->timerWindow->destroy();
+    $this->logoutPopup = new LogoutPopup();
+    if ( $this->logoutPopup->run() == Gtk::RESPONSE_YES ) {
+      $this->performLogout();
+    } else {
+      $this->createTimerWindow();
+    }
+    $this->logoutPopup->destroy();
+    return true;
+  }
+  
+  public function performLogout( $status = "Logged out" ) {
+    if ( DEBUG ) echo "KioskClient::performLogout( $status )\n";
+    
+    if ( $this->timeWarning ) $this->timeWarning->destroy();
+
+    switch ( $status ) {
+      case "Logged out" :
+        $this->dbInterface->setLoggedOut();
+        $this->restartWindowManager();
+        break;
+      case "Kicked" :
+        $this->dbInterface->setKicked();
+        $this->restartWindowManager();
+        break;
+      case "Paused" :
+        $this->dbInterface->setPaused();
+        break;
+    }
+
+    Gtk::timeout_remove( $this->timeoutHandlerId );
+    $this->timeoutHandlerId = null;
+
+    $this->createLoginWindow( $status );
+  }
+  
+  public function pauseKiosk() {
+    $this->performLogout( $status = "Paused" );  
+  }
+  
+  public function quitNow() {
+    if ( DEBUG ) echo "KioskClient::quitNow()\n";
+    Gtk::main_quit();
+  }
+  
+  ## When the timer window is given the destroy signal ( clicking the corner 'X' ), it executes warnLogout()
+  ## This method is connected to the logout button, so it to sends the destroy signal to the timerWindow.
+  public function processLogoutButton() {
+    $this->timerWindow->destroy();
+  }
+
+  protected function createTimerWindow() {
+    if ( DEBUG ) echo "KioskClient::createTimerWindow()\n";
+
+    if ( $this->timerWindow ) {
+      $this->destroyTimerWindow();
+    }
+
+    $this->timerWindow = new TimerWindow();
+    $this->destroySignalHandler = $this->timerWindow->connect_simple( 'destroy', array( &$this, 'warnLogout' ) );
+    $this->timerWindow->pauseButton->connect_simple( 'clicked', array( &$this, 'pauseKiosk' ) );
+    $this->timerWindow->logoutButton->connect_simple( 'clicked', array( &$this, 'processLogoutButton' ) );
+#    $this->timerWindow->quitButton->connect_simple( 'clicked', array( &$this, 'quitNow' ) );
+    if ( ! $this->timeoutHandlerId ) {
+      $this->timeoutHandlerId = Gtk::timeout_add( 1000 * $this->updates_timeout, array( &$this, 'onTimeout' ) );
+    }
+    $this->timerWindow->show_all();
+    $this->timerWindow->set_position( Gtk::WIN_POS_CENTER );
+  }
+
+  private function destroyTimerWindow() {
+    if ( DEBUG ) echo "KioskClient::destroyTimerWindow()\n";
+    if ( DEBUG ) echo "KioskClient::destroySignalHandler = " . $this->destroySignalHandler . "\n";
+    $this->timerWindow->disconnect( $this->destroySignalHandler );
+    return $this->timerWindow->destroy() && $this->timerWindow = null;
+  }
+
+
+  protected function createLoginWindow( $status = null ) {
+    if ( DEBUG ) echo "KioskClient::createLoginWindow()\n";
+
+    if ( $this->loginWindow ) {
+      $this->destroyLoginWindow();
+    }
+    
+    $this->loginWindow->status = $status;
+
+    $this->loginWindow = new LoginWindow( $status );
+    $this->loginWindow->connect( 'key-press-event', array( &$this, 'onKey' ), $input );
+    $this->loginWindow->loginButton->connect_simple( 'clicked', array( &$this, 'performLogin' ) );
+    $this->loginDestroyHandlerId = $this->loginWindow->connect_simple( 'destroy', array( &$this, 'recreateLoginWindow' ) );
+#    $this->loginWindow->quitButton->connect_simple( 'clicked', array( &$this, 'quitNow' ) );
+      
+    if ( $status == "Paused" ) {
+      $this->pausedTimeLeft = 60 * $this->dbInterface->getSetting( 'max_pause_time' );
+      $this->loginWindow->messageLabel->set_label( $this->strings["pausedLabel_begin"] . $this->pausedTimeLeft . $this->strings["pausedLabel_end"] );
+      $this->pausedTimeoutHandlerId = Gtk::timeout_add( 1000, array( &$this, 'onPauseTimeout' ) );                      
+    }
+     
+    $this->loginWindow->show_all();
+    $this->loginWindow->hideErrorBox();
+
+    $this->loginWindow->errorButton->connect_simple( 'clicked', array( &$this, 'displayLoginBox' ) );
+
+  }
+
+  private function destroyLoginWindow() {
+    if ( DEBUG ) echo "KioskClient::destroyLoginWindow()\n";
+    $this->loginWindow->disconnect( $this->loginDestroyHandlerId );    
+    return $this->loginWindow->destroy() && $this->loginWindow = null;
+  }
+  
+  public function recreateLoginWindow() {
+    if ( DEBUG ) echo "KioskClient::recreateLoginWindow()\n";
+    $status = $this->loginWindow->status;
+    $this->loginWindow->disconnect( $this->loginDestroyHandlerId );
+    $this->loginWindow->destroy();
+    $this->createLoginWindow( $status );
+  }
+  
+  public function displayLoginBox() {
+    $this->loginWindow->hideErrorBox();
+    $this->loginWindow->showLoginBox();
+  }
+
+  public function onPauseTimeout() {
+    if ( DEBUG ) echo "LoginWindow::onPauseTimeout()\n";
+      
+    $this->pausedTimeLeft--;
+    $this->loginWindow->messageLabel->set_label( $this->strings["pausedLabel_begin"] . $this->pausedTimeLeft . $this->strings["pausedLabel_end"] );
+              
+    if ( $this->pausedTimeLeft <= 0 ) {
+      $this->destroyTimerWindow();
+      $this->loginWindow->unPause();
+      $this->loginWindow->messageLabel->set_label( $this->strings["promptLabel"] );
+      $this->dbInterface->setLoggedOut();
+      
+      Gtk::timeout_remove( $this->pausedTimeoutHandlerId );   
+      $this->pausedTimeoutHandlerId = null;
+      
+      return false;
+    } else {
+      return true;
+    }
+
+  }
+  
+  public static function getStrings() {
+    if ( is_readable("/etc/libki/strings") ) {
+      echo "Found /etc/libki/strings\n";
+      return parse_ini_file( "/etc/libki/strings" );
+    } elseif ( is_readable("strings") ) {
+      return parse_ini_file( "strings" );
+      echo "Found ./strings\n";
+    } else {
+      die( "Could not locate strings file." );
+    }
+  }
+  
+  public static function getEnvironment() {
+    if ( file_exists( "c:\windows" ) ) {
+		return "windows";
+    } else {
+		return "linux";
+    } 
+  }
+  
+  private static function restartWindowManager() {
+	echo "RestartWindowManager\n";
+	if ( KioskClient::getEnvironment() == "windows" ) {
+		echo "Running force_logoff.cmd\n";
+		exec("windows\force_logoff.cmd > NUL");
+	} else { ## Default to KDE
+		$user = $_SERVER['USER'];
+		system( "dcop --user $user ksmserver MainApplication-Interface quit" ); // For KDE
+		system( "gnome-session-save --kill --silent" ); // For Gnome
+		system( "/usr/bin/xfce4-session-logout" ); // For XFCE
+	}
+  }                                                    
+  
+  private function restartClient() {
+	echo "RestartClient()\n";
+	
+	if ( $this->timerWindow ) $this->performLogout();
+	
+	if ( KioskClient::getEnvironment() == "windows" ) {
+		echo "Running force_reboot.cmd\n";
+		exec("windows\force_reboot.cmd > NUL");
+	} else { 
+		# For this to work, sudo must be installed and the line
+		# %shutdown ALL=(root) NOPASSWD: /sbin/reboot
+		# needs to be added to /etc/sudoers
+		system( "sudo reboot" );
+	}
+   }
+}
+?>

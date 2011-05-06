@@ -1,0 +1,48 @@
+<?php echo $html->css('cake.generic.forms');?>
+
+<div id="editOffersForm">
+	<form name="editOffersForm" id="editOffersForm" action="<?=$html->url('/logins/index/updateRuntimeSettings')?>" method="post">
+		<fieldset>
+			<legend>Edit Offers</legend>
+
+			<label for="offerDescription">Description:</label>
+			<select name="offerDescription" id="offerDescription">
+				<option value="">No Offers Defined</option>
+			</select>
+
+			<label for="offerUnitsIncluded">Units Included:</label>
+			<input type="text" name="offerUnitsIncluded" id="offerUnitsIncluded" />
+
+			<label for="offerPrice">Price:</label>
+			<input type="text" name="offerPrice" id="offerPrice" />
+
+			<input class="submitSave" type="submit" value="Save" />
+
+			<input class="submitDelete" type="submit" value="Delete" />
+		</fieldset>
+	</form>
+</div>
+
+<div id="createOfferForm">
+	<form name="createOfferForm" id="createOfferForm" action="<?=$html->url('/logins/index/updateRuntimeSettings')?>" method="post">
+		<fieldset>
+			<legend>Create Offer</legend>
+
+			<label for="offerDescription">Description:</label>
+			<input type="text" name="offerDescription" id="offerDescription" />
+
+			<label for="offerExtras">Extras:</label>
+			<input type="textbox" name="offerExtras" id="offerExtras" />
+
+			<label for="offerUnitsIncluded">Units Included:</label>
+			<input type="text" name="offerUnitsIncluded" id="offerUnitsIncluded" />
+
+			<label for="offerPrice">Price:</label>
+			<input type="text" name="offerPrice" id="offerPrice" />
+
+			<input class="submitSave" type="submit" value="Save" />
+
+		</fieldset>
+	</form>
+</div>
+

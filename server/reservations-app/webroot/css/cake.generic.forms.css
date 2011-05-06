@@ -1,0 +1,84 @@
+/* forms */
+fieldset {
+  padding: 1em;
+  font: sans-serif;
+}
+
+label {
+  float:left;
+  width:15%;
+  margin-right:0.5em;
+  padding-top:0.2em;
+  text-align:right;
+  font-weight:bold;
+}
+
+legend {
+  padding: 0.2em 0.5em;
+  border:1px solid blue;
+  color:blue;
+  font-size:90%;
+  text-align:right;
+}
+
+form {
+margin-top: 2em;
+}
+form div{
+vertical-align: text-top;
+margin-left: 1em;
+margin-bottom:2em;
+}
+form div.date{
+margin-left: 0em;
+}
+
+/*
+label {
+display: block;
+width: 140px;
+font-size: 14px;
+padding-right: 20px;
+}
+/*
+
+input[type=checkbox] {
+float: left;
+clear: left;
+margin: 2px 6px 7px 2px;
+}
+input, textarea {
+clear: both;
+display:block;
+font-size: 14px;
+font-family: inherit;
+}
+select {
+clear: both;
+vertical-align: text-bottom;
+font-size: 14px;
+font-family: inherit;
+}
+option {
+font-size: 14px;
+font-family: inherit;
+padding: 0 0.3em;
+}
+input[type=submit] {
+display: inline;
+vertical-align: bottom;
+}
+div.required {
+clear: both;
+color:#222;
+font-weight:bold;
+}
+div.optional {
+clear: both;
+color:#555;
+}
+div.submit {
+clear: both;
+margin-top: 40px;
+margin-left: 140px;
+}

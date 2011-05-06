@@ -1,0 +1,18 @@
+<?if ($error): ?>
+	<p>The login credentials you supplied could not be recognized. Please try again.</p>
+<? endif; ?>
+
+<form action="<?php echo $html->url('/authentications/login'); ?>" method="post">
+	<div>
+		<?php echo $form->input('Authentication/username', array('size' => 20)); ?>
+	</div>
+
+	<div>
+		<label for="password">Password</label>
+		<?php echo $form->password('Authentication/password', array('size' => 20)); ?>
+	</div>
+
+	<div>
+		<?php echo $form->submit('Login'); ?>
+	</div>
+</form>

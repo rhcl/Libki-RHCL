@@ -1,0 +1,34 @@
+<form action="<?=$html->url('/reservations/confirm_reservation/')?>" method="post">
+        <input type='hidden' name='start_timestamp' id='start_timestamp' value='<?=$start_timestamp?>' />
+        <input type='hidden' name='machine' id='machine' value='<?=$machine?>' />
+
+	<table border="0">
+		<tr>
+			<td colspan="2">
+				Reserve machine <strong><?=$machine?></strong> starting at <strong><?=date('h:i A', $start_timestamp )?></strong>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<label for="username">Cardnumber:</label>
+			</td>
+			<td>
+				<input type="text" name="username" id="username" />
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<label for="password">Password:</label>
+			</td>
+			<td>
+				<input type="password" name="password" id="password" />
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<input type="submit" value="Make Reservation">
+			</td>
+			<td>&nbsp</td>
+		</tr>
+	</table>
+</form>

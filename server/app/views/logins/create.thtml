@@ -1,0 +1,38 @@
+<h2>Create New User Account</h2>
+
+<form action="<?=$html->url('/logins/create')?>" method="post">
+	<p>
+		<?php echo $form->input('Login/username', array('size'=>'40', 'value'=>"guest".$next_guest_id))?>
+	</p>
+
+	<br />
+
+	<p>
+		<?php echo $form->input('Login/password', array('size'=>'40'))?>
+	</p>
+
+	<br />
+
+	<p>
+		<?php echo $form->input('Login/units', array('size'=>'3', 'value'=>'30'))?>
+	</p>
+
+	<br />
+
+	<p>Is An Administrator:
+		<?=$form->select( 
+			$fieldName = 'Login/admin', 
+			$options = array( '0' => 'No', '1' => 'Yes' ), 
+			$selected = 'No', 
+			$selectAttr = array(),
+			$showEmpty = false
+			)
+		?>
+	</p>
+
+	<br />
+
+	<?=$form->input('Login/status', array( 'type' => 'hidden', 'value' => 'Logged out' ) )?>
+
+	<p><?=$form->submit('Save')?></p>
+</form>

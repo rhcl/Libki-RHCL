@@ -1,0 +1,7 @@
+<form action="<?=$html->url('/logins/update_notes/')?>" method="post">
+	<label for="amount">Notes:</label><br/>
+	<input type="hidden" name="username" id="username" value="<?=$username?>" />
+	<textarea rows="10" cols="50" name="notes" id="notes"><?=$notes?></textarea>
+	<br/><br/>
+	<input type="submit" value="Update Notes">
+</form>

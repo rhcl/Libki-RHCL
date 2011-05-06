@@ -1,0 +1,89 @@
+<h1>libKi Help</h1>
+
+<h2>The <i>Users</i> page.</h2>
+
+<p>The <i>Users</i> page is where most time will be spent when using libKi. From this page, one can see which users are logged it, and where.</p>
+
+
+<h3>Searching</h3>
+
+<p>At the top of the <i>Users</i> page is a box labeled <i>Search Users</i>. Within this search box are a textbox labeled <i>Username</i> and a pulldown menu labeled <i>Status</i>
+</p>
+
+<p>To search for users of a particular status, simple choose that status from the pulldown menu and click the <i>Search Users</i> button. This will list all users of that particular status.
+For example, to get a list of all users who are currently logged in at libKi kiosks, choose the status "Logged in" from the pulldown menu, then click the <i>Search Users</i> button.
+</p>
+
+<p>To search for a particular user, type the username in the <i>Username</i> box. For example, if you put a "k" in the username box, then search, a list of all users with usernames beginning with "k" will be displayed.
+However, if you put "kyle" in the <i>Username</i> box, only usernames that begin with the phrase "kyle" will be shown.
+</p>
+
+<h3>Results</h3>
+
+<p>In the results table, there are a number of columns as follows:
+<ul>
+  <li>
+    Username
+    <ul><li>The username for this particular user.</li></ul>
+  </li>
+
+  <li>
+    Units
+    <ul><li>The number of minutes the user has left. When a user is logged in, his or her units count down until the persons either logs out, pauses the session, or units reach 0. If units reach 0, the user is automatically logged out.</li></ul>
+  </li>
+
+  <li>
+    Status
+    <ul><li><i>Status</i> lists the current status of the user, such as "Logged out", "Logged in", "Paused" or "Kicked".</li></ul>
+  </li>
+
+  <li>
+    Machine
+    <ul><li><i>Machine</i> indicates which kiosk the user is currently logged in at.</li></ul>
+  </li>
+
+  <li>
+    Notes
+    <ul><li><i>Notes</i> is a place to store notes about the user. I red dot will appear on the icon if there is a note attached to it. Hover the mouse over the icon to view the note, or click the icon to edit the notes.</li></ul>
+  </li>
+
+  <li>
+    Edit Time
+    <ul><li>If <i>Edit Time</i> is clicked, a small popup will appear that will allow the number of <i>Units</i> for a given user to be changed.</li></ul>
+  </li>
+
+  <li>
+    Kick
+    <ul><li>If <i>Kick</i> is clicked, the given user's status will be set to "Kicked". Until the status is changed, the user will be unable to log in to any libKi kiosk stations.</li></ul>
+  </li>
+
+  <li>
+    Reset Password
+    <ul><li>If a patron has forgotten his or her password, click reset password. When the user tries to login with a blank password, he or she will be able to set a new password.</li></ul>
+  </li>
+
+  <li>
+    Delete
+    <ul><li><i>Delete</i> will permanently delete the given user account. There is no way to recover a deleted account, so please use cautiously.</li></ul>
+  </li>
+
+  <li>
+    Unpause
+    <ul><li>If a user has paused his or her session, clicking <i>Unpause</i> will restart the session without the user inputing his or her username and password.</li></ul>
+  </li>
+
+  <li>
+    Send Message
+    <ul><li>Clicking <i>Send Message</i> will display a small popup box in which to input a message to be sent to the given user.
+            When the message is sent, a popup will appear on the logged in user's kiosk. If a message is sent when the user is not logged in, it will be displayed the next time the user logs in.
+    </li></ul>
+  </li>
+
+  <li>
+    Log Out
+    <ul><li>Clicking <i>Log Out</i> will set the user's status to "Logged out". This is how a kicked user's account is re-enabled. If <i>Log Out</i> is clicked while the given user
+            is logged in to a kiosk, the user will be forcefully logged out, but will be able to log back in immeadiately.
+    </li></ul>
+  </li>
+
+</ul>

@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>libKi Web Admin : <?php echo $title_for_layout;?></title>
+
+<script type="text/javascript">
+    var GB_ROOT_DIR = "http://" + window.location.host + "/greybox/";
+</script>
+<script type="text/javascript" src="/greybox/AJS.js"></script>
+<script type="text/javascript" src="/greybox/AJS_fx.js"></script>
+<script type="text/javascript" src="/greybox/gb_scripts.js"></script>
+<link href="/greybox/gb_styles.css" rel="stylesheet" type="text/css" />
+
+
+<link rel="icon" href="<?php echo $this->webroot . 'favicon.ico';?>" type="image/x-icon" />
+<link rel="shortcut icon" href="<?php echo $this->webroot . 'favicon.ico';?>" type="image/x-icon" />
+
+<?php echo $html->css('cake.generic');?>
+<?php echo $html->css('googlebar');?>
+<?php echo $html->css('form.images');?>
+
+</head>
+<body>
+	<div id="container">
+		<div id="gbar">
+			<nobr>
+				<span class="gb1"><a <?=($this->name == 'Logins') ? 'class=selected' : ''?> href="<?=$html->url('/logins/index/')?>" >Users</a></span>
+				<span class="gb1"><a href="<?=$html->url('/clients/index/')?>" >Clients</a></span>
+				<span class="gb1"><a href="<?=$html->url('/settings/index/')?>">Settings</a></span>
+				<span class="gb1"><a href="<?=$html->url('/statistics/index/')?>">Statistics</a></span>
+<!--				<span class="gb1"><a href="<?=$html->url('/offer/index/')?>">Offers</a></span>		-->
+				<span class="gb1"><a href="<?=$html->url('/settings/about/')?>">About</a></span>
+				<span class="gb1"><a href="<?=$html->url('/settings/help/')?>">Help</a></span>
+			</nobr>
+		</div>
+		<div id="gbh"></div>
+		<div align="right" id="guser" style="font-size:84%;padding:0 0 4px" width="100%">
+			<nobr>
+				<?php if ( isset( $myUsername ) ) : ?>
+					<b><?=$myUsername?></b>
+					| <a href="<?=$html->url('/authentications/logout')?>">Sign Out</a>
+				<?php endif; ?>
+			</nobr>
+		</div>
+
+		<div id="header">
+			<h5>libKi Web Admin</h5>
+		</div>
+		<div id="content">
+			<?php if ($session->check('Message.flash'))
+					{
+						$session->flash();
+					}
+					echo $content_for_layout;
+			?>
+		</div>
+		<div id="footer">
+			&nbsp;
+			<a href="http://www.cakephp.org/" target="_new">
+				<?php echo $html->image('cake.power.png', array('alt'=>"CakePHP(tm) : Rapid Development Framework", 'border'=>"0"));?>
+			</a>
+		</div>
+	</div>
+</body>
+</html>
