@@ -18,24 +18,17 @@
 define( 'DEBUG', 0 );
                                         
 $libki = parse_ini_file( "/etc/libki/libki.ini", $process_sections=true ) or die( "Unable to parse /etc/libki/libki.ini" );
-#$koha = parse_ini_file( "/etc/koha.conf" );
-
-#corrected the above path to the following - AO & GSL 6 May 11
 $koha = parse_ini_file( "/etc/libki/koha.ini" );
 
 
 ## Open the Koha database
 
-#$kdbh = mysql_connect( $koha["hostname"], $koha["user"], $koha["pass"] ) or die("Unable to connect to Koha MySQL Server" );
-#Corrected the username and host values - AO & GSL 6 May 11
 $kdbh = mysql_connect( $koha['host'], $koha['username'], $koha['pass']  ) or die("Unable to connect to Koha MySQL Server" ); 
 mysql_select_db( $koha["database"], $kdbh ) or die( "Unable to open Koha database." );
 
 ##### Get Data From Koha #####
 
 ## Get list of expired accounts
-#$query = "SELECT cardnumber FROM borrowers WHERE DATE(expiry) < DATE( NOW() )";
-#Attempting to correct syntax
 $query = "SELECT cardnumber FROM borrowers WHERE DATE(dateexpiry) < DATE ( NOW() )";
 if ( DEBUG ) echo "\n$query ";
 $results = mysql_query( $query, $kdbh ) or die( mysql_error() );
