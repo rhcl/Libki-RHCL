@@ -4,9 +4,9 @@
 
 ;[Login Window]
 promptLabel = "<span color='blue'>Please Log In.</span>"
-usernameLabel = "Libary Card Number: "
+usernameLabel = "Card Number: "
 passwordLabel = "Password: "
-topLabel = "<span color='red' background='lightgray' size='xx-large' weight='heavy' variant='smallcaps'>Internet Access Computer</span>"
+topLabel = "<span color='blue' size='xx-large' weight='heavy' variant='smallcaps'>Rolling Hills Consolidated Library</span>"
 
 ;[Button Labels]
 loginButton = "Log In"

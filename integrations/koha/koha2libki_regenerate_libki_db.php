@@ -39,16 +39,19 @@ foreach ( $libki as $ini ) {
 
   ## Grab all the cardnumbers and passwords from the Koha db
   ## Create libki users based on the data
-  $query = "SELECT cardnumber, password FROM borrowers";
+  $query = "SELECT cardnumber, password, surname, firstname, dateofbirth FROM borrowers";
   $results = mysql_query( $query, $kdbh );
 
   while ( $result = mysql_fetch_assoc( $results ) ) {
     $cardnumber = mysql_real_escape_string( $result['cardnumber'], $ldbh );
     $password = mysql_real_escape_string( $result['password'], $ldbh );
+    $firstname = mysql_real_escape_string( $result['firstname'], $ldbh );
+    $surname = mysql_real_escape_string( $result['surname'], $ldbh ); 
+    $dateofbirth = mysql_real_escape_string( $result['dateofbirth'], $ldbh );
   
     echo "Adding cardnumber $cardnumber\n";
   
-    $query = "INSERT INTO logins ( username, units, status, password ) VALUES ( '$cardnumber', '$daily_minutes', 'Logged out', '$password' )";
+    $query = "INSERT INTO logins ( username, units, status, password, firstname, surname, dateofbirth ) VALUES ( '$cardnumber', '$daily_minutes', 'Logged out', '$password', '$firstname', '$surname', '$dateofbirth' )";
     mysql_query( $query, $ldbh ) or die( "Update Failed\n" );
   }
 }

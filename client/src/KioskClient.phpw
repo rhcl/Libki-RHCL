@@ -71,7 +71,7 @@ class KioskClient {
   ## If either field is empty, it will jump to the empty field.
   ## If neither field is empty, it will act the same as clicking the 'Log In' button.
   public function onKey( $widget, $event, $input ) {
-    if ( DEBUG ) echo "KioskClinet::onKey()\n";
+    if ( DEBUG ) echo "KioskClient::onKey()\n";
     if ( $event->keyval == Gdk::KEY_Return ) {
       $username = $this->loginWindow->usernameEntry->get_text();
       $password = $this->loginWindow->passwordEntry->get_text();

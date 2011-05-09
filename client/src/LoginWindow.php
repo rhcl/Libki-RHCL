@@ -40,10 +40,10 @@ class LoginWindow extends GtkWindow {
     $screenWidth = $screen->get_width();
     $screenHeight = $screen->get_height();
   
-    $this->set_decorated( 0 );
-    $this->set_default_size( $screenWidth, $screenHeight );
-    $this->fullscreen();
-    $this->set_keep_above( 1 );
+    $this->set_decorated( 1 );
+    $this->set_default_size( 800, 600 ); ##Temporary Changed for testing  ($screenWidth, $screenHeight)
+    #$this->fullscreen();
+    $this->set_keep_above( 0 );
     $this->set_modal( 1 );
       
     $messageBox = new GtkHBox();
@@ -92,12 +92,11 @@ class LoginWindow extends GtkWindow {
     $this->errorBox->pack_start( $errorLabelBox );
     $this->errorBox->pack_start( $errorButtonBox );
 
-#    if ( DEBUG ) {
-#      $this->quitButton = new GtkButton("Quit");
-#      $this->loginBox->pack_start( $this->quitButton );
-#    }
-  
-#    $this->connect_simple( 'destroy', array('Gtk', 'main_quit') );
+    if ( DEBUG ) {
+      $this->quitButton = new GtkButton("Quit");
+      $this->loginBox->pack_start( $this->quitButton );
+    }  
+    $this->connect_simple( 'destroy', array('Gtk', 'main_quit') );
   
     $centerHBox = new GtkHBox();
     $centerVBox = new GtkVBox();
